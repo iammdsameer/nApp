@@ -1,0 +1,15 @@
+#!/bin/bash
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+sudo install minikube-linux-amd64 /usr/local/bin/minikube && rm minikube-linux-amd64
+minikube start
+echo $DOCKER_PASSWORD | docker login -u itsmdsameerkhan --password-stdin
+docker build -t itsmdsameerkhan/node-js-server-k8s:v1 .
+docker push itsmdsameerkhan/node-js-server-k8s:v1
+kubectl apply -f node-app-config.yaml 
+kubectl apply -f node-app-deployment.yaml 
+kubectl expose deployment node-app --type=NodePort --port=80
+kubectl get svc
+kubectl logs deployment/node-app
+kubectl get nodes
+url="$(minikube service node-app --url)"
+echo "Now curl on the deployment: $url"
